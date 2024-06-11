@@ -6,7 +6,6 @@ import threading
 
 
 def predict_image(image):
-    # todo: ml prediction
     return image
 
 
