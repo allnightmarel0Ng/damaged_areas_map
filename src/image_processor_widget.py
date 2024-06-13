@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QPushBut
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 import cv2
-import threading
 
 
 def predict_image(image):
@@ -15,14 +14,12 @@ class ImageProcessorWidget(QWidget):
         self.setWindowTitle('Image Processor')
         self.setGeometry(100, 100, 400, 300)
 
-        self.mutex = threading.Lock()
-
         self.image_label = QLabel(self)
         self.image_label.setText("No image selected")
         self.image_label.setAlignment(Qt.AlignCenter)  # Fixed alignment setting
 
         self.process_button = QPushButton('Process Image', self)
-        self.process_button.clicked.connect(self.processImage)
+        self.process_button.clicked.connect(self.process_image)
 
         layout = QVBoxLayout()
         layout.addWidget(self.image_label)
@@ -31,8 +28,6 @@ class ImageProcessorWidget(QWidget):
         self.setLayout(layout)
 
     def process_image(self):
-        self.mutex.acquire()
-
         options = QFileDialog.Options()
         file_name: str
         file_name, _ = QFileDialog.getOpenFileName(self, "Open Image File", "",
@@ -40,7 +35,6 @@ class ImageProcessorWidget(QWidget):
 
         if not file_name or not file_name.isascii():
             self.image_label.setText('No filepath provided or non-ascii symbol in filepath found')
-            self.mutex.release()
             return
 
         image = cv2.imread(file_name)
@@ -48,8 +42,6 @@ class ImageProcessorWidget(QWidget):
         predicted_image = predict_image(image)
 
         self.display_image(predicted_image)
-
-        self.mutex.release()
 
     def display_image(self, image):
         height, width, channel = image.shape
